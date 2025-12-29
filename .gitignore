@@ -1,6 +1,6 @@
-# ignore all env files anywhere
 *.env
 .env
 config.env
+backend/config.env
 */config.env
 */.env

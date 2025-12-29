@@ -1,3 +1,6 @@
-config.env
-.env
+# ignore all env files anywhere
 *.env
+.env
+config.env
+*/config.env
+*/.env

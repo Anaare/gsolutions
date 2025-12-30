@@ -1,14 +1,9 @@
 import mongoose, { Schema, Document } from "mongoose";
 import type { User } from "../types/types.js";
+import bcrypt from "bcryptjs";
 
-/* 
-    1. Create a "Super Type" that combines our custom User interface with Mongoose's Document methods.
-   We Omit "_id" from our interface because Mongoose provides its own "ObjectId" type, 
-   preventing a TypeScript conflict between a string and an Object. 
-*/
 export interface UserDocument extends Omit<User, "_id">, Document {}
 
-// 2. Define User Schema
 export const userSchema = new Schema<UserDocument>(
   {
     name: { type: String, required: [true, "Please add a name"] },
@@ -20,6 +15,7 @@ export const userSchema = new Schema<UserDocument>(
     password: {
       type: String,
       required: [true, "Please add a password"],
+      select: false,
     },
     role: {
       type: String,
@@ -30,7 +26,11 @@ export const userSchema = new Schema<UserDocument>(
   { timestamps: true }
 );
 
-// 3. Creating a Model
-const User = mongoose.model<UserDocument>("User", userSchema);
+// PASSWORD HASHING WITH BCRYPT
+userSchema.pre("save", async function (this: UserDocument) {
+  if (!this.isModified("password")) return;
+  this.password = await bcrypt.hash(this.password!, 12);
+});
 
+const User = mongoose.model<UserDocument>("User", userSchema);
 export default User;

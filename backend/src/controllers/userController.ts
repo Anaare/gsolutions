@@ -23,15 +23,6 @@ export const getUser: RequestHandler = catchAsync(async (req, res, next) => {
   });
 });
 
-export const createUser: RequestHandler = catchAsync(async (req, res, next) => {
-  const newUser = await User.create(req.body);
-
-  res.status(201).json({
-    status: "success",
-    data: { newUser },
-  });
-});
-
 export const updateOneUser: RequestHandler = catchAsync(
   async (req, res, next) => {
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {

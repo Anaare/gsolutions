@@ -1,6 +1,12 @@
-*.env
+# Ignore all .env files in any directory
 .env
-config.env
-backend/config.env
-*/config.env
-*/.env
+.env.local
+.env.development
+
+# Ignore dependency folders
+node_modules/
+dist/
+build/
+
+# Ignore OS specific files
+.DS_Store

@@ -5,13 +5,6 @@ import crypto from "crypto";
 
 export interface UserDocument extends Document, Omit<User, "_id"> {}
 
-// // In your Model file or types file:
-/* export interface UserDocument extends Document, Omit<User, "_id"> {
-  // Explicitly defining methods here ensures 'this' context works perfectly
-  comparePassword(candidate: string): Promise<boolean>;
-  createPasswordResetToken(): string;
-} */
-
 export const userSchema = new Schema<UserDocument>(
   {
     name: { type: String, required: [true, "Please add a name"] },

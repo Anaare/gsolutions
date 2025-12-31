@@ -11,9 +11,11 @@ import {
 import { protect } from "../middlewares/authMiddleware.js";
 import { restrictTo } from "../controllers/authController.js";
 
+router.use(protect);
+
 router.route("/").get(getAllUsers);
 
-router.use(protect, restrictTo("Director"));
+router.use(restrictTo("Director"));
 
 router.route("/:id").get(getUser).patch(updateOneUser).delete(deleteUser);
 

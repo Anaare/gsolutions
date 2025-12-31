@@ -2,6 +2,12 @@ import { Request, Response, NextFunction } from "express";
 
 export type UserRole = "Director" | "Accountant" | "Audit";
 
+export type AsyncFunction = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => Promise<void | any>;
+
 export interface User {
   name: string;
   email: string;
@@ -18,8 +24,19 @@ export interface User {
   _id?: string;
 }
 
-export type AsyncFunction = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => Promise<void | any>;
+export interface Employee {
+  firstName: string;
+  lastName: string;
+  personalId: string;
+  email?: string;
+  position: string;
+  grossSalary: number;
+  employeePension: number;
+  employerPension: number;
+  incomeTax: number;
+  netSalary: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  active?: boolean;
+  _id?: string;
+}

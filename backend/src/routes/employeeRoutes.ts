@@ -1,10 +1,9 @@
 import express from "express";
 import {
-  addEmployee,
-  deleteEmployee,
   getAllEmployees,
+  addEmployee,
   getEmployee,
-  restoreEmployee,
+  deleteEmployee,
   updateEmployee,
 } from "../controllers/employeeController.js";
 import { protect } from "../middlewares/authMiddleware.js";
@@ -12,14 +11,14 @@ import { restrictTo } from "../controllers/authController.js";
 
 const router = express.Router();
 
-router.use(protect);
+// router.use(protect);
 
 router.route("/").get(getAllEmployees);
 
-router.use(restrictTo("Director", "Accountant"));
+// router.use(restrictTo("Director", "Accountant"));
 
 router.route("/addEmployee").post(addEmployee);
-router.patch("/restoreEmployee/:personalId", restoreEmployee);
+// router.patch("/restoreEmployee/:personalId", restoreEmployee);
 
 router
   .route("/:id")

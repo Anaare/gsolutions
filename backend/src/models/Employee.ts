@@ -40,7 +40,7 @@ export const employeeSchema = new Schema<EmployeeDocument>(
     incomeTax: Number,
     netSalary: Number,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Calculation Logic (Middleware)
@@ -89,24 +89,24 @@ employeeSchema.pre(
     if (filter.active === false) return;
 
     this.find({ active: { $ne: false } });
-  }
+  },
 );
 
 // 2. Static Method
 employeeSchema.statics.restoreByPersonalId = function (
   this: Model<EmployeeDocument>, // Change from EmployeeModel to Model<EmployeeDocument>
-  id: string
+  id: string,
 ) {
   return this.findOneAndUpdate(
     { personalId: id, active: false },
     { active: true },
-    { new: true }
+    { new: true },
   ).select("+active");
 };
 
 const Employee = mongoose.model<EmployeeDocument, EmployeeModel>(
   "Employee",
-  employeeSchema
+  employeeSchema,
 );
 
 export default Employee;

@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
-import User from "../models/User.js";
-import { AppError } from "../utils/appError.js";
-import { catchAsync } from "../utils/catchAsync.js";
+import User from "../../models/User.js";
+import { AppError } from "../../utils/appError.js";
+import { catchAsync } from "../../utils/catchAsync.js";
 
 export const getAllUsers: RequestHandler = catchAsync(
   async (req, res, next) => {
@@ -9,7 +9,7 @@ export const getAllUsers: RequestHandler = catchAsync(
     res
       .status(200)
       .json({ status: "success", result: users.length, data: { users } });
-  }
+  },
 );
 
 export const getUser: RequestHandler = catchAsync(async (req, res, next) => {
@@ -37,7 +37,7 @@ export const updateOneUser: RequestHandler = catchAsync(
       status: "success",
       data: { updatedUser },
     });
-  }
+  },
 );
 
 export const deleteUser: RequestHandler = catchAsync(async (req, res, next) => {

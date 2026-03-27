@@ -7,9 +7,9 @@ import {
   getAllUsers,
   getUser,
   updateOneUser,
-} from "../controllers/userController.js";
+} from "../controllers/old_controllers /userController.js";
 import { protect } from "../middlewares/authMiddleware.js";
-import { restrictTo } from "../controllers/authController.js";
+import { restrictTo } from "../controllers/old_controllers /authController.js";
 
 router.use(protect);
 

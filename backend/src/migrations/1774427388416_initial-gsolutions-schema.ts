@@ -22,6 +22,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
     CREATE TABLE services (
         id SERIAL PRIMARY KEY,
         name varchar(100) NOT NULL,
+        status varchar(50) DEFAULT 'active',
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now()
     );
@@ -31,7 +32,6 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         name varchar(100) NOT NULL,
         email varchar(100) NOT NULL,
         service_category_id integer REFERENCES services(id),
-        status varchar(50) DEFAULT 'active',
         created_at timestamp DEFAULT now()
     );
 
@@ -90,15 +90,53 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         )
     );
 
-    CREATE TABLE payrolls (
-        id SERIAL PRIMARY KEY,
-        employee_id integer REFERENCES employees(id),
-        gross_salary numeric NOT NULL,
-        net_salary numeric NOT NULL,
-        pay_period_start date,
-        pay_period_end date,
-        created_at timestamp DEFAULT now()
-    );
+   CREATE TABLE payrolls (
+  id SERIAL PRIMARY KEY,
+  employee_id INTEGER REFERENCES employees(id),
+
+  -- Base Inputs
+  gross_salary NUMERIC(12, 2) NOT NULL,
+  pension_member BOOLEAN NOT NULL DEFAULT true,
+  
+  -- Static Deductions (Enter these manually or default to 0)
+ insurance_deduction NUMERIC(12, 2) NOT NULL DEFAULT 0, 
+  fitpass_deduction NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  other_deduction NUMERIC(12, 2) NOT NULL DEFAULT 0,
+
+  -- 1. Auto-Calculate Pension (2% if they are a member, else 0)
+  pension_amount_employee NUMERIC(12, 2) GENERATED ALWAYS AS (
+    CASE WHEN pension_member THEN (gross_salary * 0.02) ELSE 0 END
+  ) STORED,
+
+  pension_amount_employer NUMERIC(12, 2) GENERATED ALWAYS AS (
+    CASE WHEN pension_member THEN (gross_salary * 0.02) ELSE 0 END
+  ) STORED,
+
+  -- 2. Auto-Calculate Income Tax
+  -- Formula: (Gross - Employee Pension) * 20%
+  income_tax NUMERIC(12, 2) GENERATED ALWAYS AS (
+    (gross_salary - (CASE WHEN pension_member THEN (gross_salary * 0.02) ELSE 0 END)) * 0.20
+  ) STORED,
+
+  -- 3. Auto-Calculate Net Salary
+  -- Gross - (Pension + Income Tax + Insurance + Fitpass + Others)
+  net_salary NUMERIC(12, 2) GENERATED ALWAYS AS (
+    gross_salary - (
+      (CASE WHEN pension_member THEN (gross_salary * 0.02) ELSE 0 END) + -- Pension
+      ((gross_salary - (CASE WHEN pension_member THEN (gross_salary * 0.02) ELSE 0 END)) * 0.20) + -- Tax
+      insurance_deduction + 
+      fitpass_deduction + 
+      other_deduction
+    )
+  ) STORED,
+
+  health_insurance_tier VARCHAR(20) DEFAULT 'none',
+  pay_period_start DATE,
+  pay_period_end DATE,
+  payroll_status VARCHAR(20) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
   `);
 }
 

@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
-import { catchAsync } from "../utils/catchAsync.js";
-import { JWT_SECRET, JWT_EXPIRES_IN } from "../config/env.js";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { JWT_SECRET, JWT_EXPIRES_IN } from "../../config/env.js";
 import jwt, { SignOptions } from "jsonwebtoken";
-import User from "../models/User.js";
-import { AppError } from "../utils/appError.js";
-import { Email } from "../utils/email.js";
+import User from "../../models/User.js";
+import { AppError } from "../../utils/appError.js";
+import { Email } from "../../utils/email.js";
 import crypto from "crypto";
 
 // TOKEN GENERATION FUNCTIONALITY
@@ -87,7 +87,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
 
   try {
     const resetURL = `${req.protocol}://${req.get(
-      "host"
+      "host",
     )}/api/v1/auth/resetPassword/${resetToken}`;
 
     // Actually send the email
@@ -107,8 +107,8 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         "There was an error sending the email. Try again later!",
-        500
-      )
+        500,
+      ),
     );
   }
 });
@@ -202,7 +202,7 @@ export const deleteMe: RequestHandler = catchAsync(
       status: "success",
       data: null,
     });
-  }
+  },
 );
 
 export const updateMe = catchAsync(async (req, res, next) => {

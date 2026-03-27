@@ -8,7 +8,7 @@ import {
   signUp,
   updateMe,
   updatePassword,
-} from "../controllers/authController.js";
+} from "../controllers/old_controllers /authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

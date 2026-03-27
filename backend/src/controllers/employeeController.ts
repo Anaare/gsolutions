@@ -55,7 +55,7 @@ export const addEmployee = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: "success",
     data: {
-      employees: result.rows[0],
+      employee: result.rows[0],
     },
   });
 });

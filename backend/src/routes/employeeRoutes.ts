@@ -7,7 +7,7 @@ import {
   updateEmployee,
 } from "../controllers/employeeController.js";
 import { protect } from "../middlewares/authMiddleware.js";
-import { restrictTo } from "../controllers/authController.js";
+import { restrictTo } from "../controllers/old_controllers /authController.js";
 
 const router = express.Router();
 

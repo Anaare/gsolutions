@@ -32,63 +32,107 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         name varchar(100) NOT NULL,
         email varchar(100) NOT NULL,
         service_category_id integer REFERENCES services(id),
+        status varchar(50) DEFAULT 'active',
         created_at timestamp DEFAULT now()
     );
 
     CREATE TABLE vendors (
-        id SERIAL PRIMARY KEY,
-        name varchar(100) NOT NULL,
-        service_category_id integer REFERENCES services(id),
-        created_at timestamp DEFAULT now()
-    );
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    identification_number VARCHAR(50) NOT NULL UNIQUE,
+    is_vat_payer BOOLEAN NOT NULL DEFAULT true,
+    
+    email VARCHAR(100),
+    phone VARCHAR(50),
+    
+    bank_account_number VARCHAR(100),
+    bank_name VARCHAR(50),
+    address TEXT,
+    
+    service_category_id INTEGER REFERENCES services(id),
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    
+    CONSTRAINT check_contact_info CHECK (
+        email IS NOT NULL OR phone IS NOT NULL
+    )
+);
 
     CREATE TABLE projects (
         id SERIAL PRIMARY KEY,
         client_id integer REFERENCES clients(id),
         service_category_id integer REFERENCES services(id),
+        total_contract_price NUMERIC(12, 2) NOT NULL DEFAULT 0,
         status varchar(50) DEFAULT 'in progress',
         start_date date,
-        created_at timestamp DEFAULT now()
+        end_date date,
+        created_at timestamp DEFAULT now(),
+        updated_at timestamp DEFAULT NOW()
     );
 
     CREATE TABLE project_vendors (
         id SERIAL PRIMARY KEY,
         project_id integer REFERENCES projects(id),
         vendor_id integer REFERENCES vendors(id),
-        agreed_cost numeric,
-        created_at timestamp DEFAULT now()
+        total_contract_price numeric,
+        status VARCHAR(50) DEFAULT 'in progress',
+        created_at timestamp DEFAULT now(), 
+        updated_at TIMESTAMP DEFAULT NOW()
     );
 
     CREATE TABLE client_invoices (
-        id SERIAL PRIMARY KEY,
-        project_id integer REFERENCES projects(id),
-        invoice_number varchar(50) UNIQUE,
-        amount numeric NOT NULL,
-        status varchar(50) DEFAULT 'unpaid',
-        created_at timestamp DEFAULT now()
-    );
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    client_id INTEGER REFERENCES clients(id), 
+    invoice_number VARCHAR(50) UNIQUE,
+    amount NUMERIC(12, 2) NOT NULL,
+    description TEXT, 
+    status VARCHAR(50) DEFAULT 'unpaid',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
 
-    CREATE TABLE vendor_bills (
+    CREATE TABLE vendors_bills (
         id SERIAL PRIMARY KEY,
         project_id integer REFERENCES projects(id),
         vendor_id integer REFERENCES vendors(id),
+        invoice_number VARCHAR(50) UNIQUE,
         amount numeric NOT NULL,
+        description TEXT, 
         status varchar(50) DEFAULT 'unpaid',
-        created_at timestamp DEFAULT now()
+        created_at timestamp DEFAULT now(), 
+        updated_at TIMESTAMP DEFAULT NOW()
     );
 
-    CREATE TABLE payments (
-        id SERIAL PRIMARY KEY,
-        invoice_id integer REFERENCES client_invoices(id),
-        bill_id integer REFERENCES vendor_bills(id),
-        amount numeric NOT NULL,
-        paid_at date DEFAULT CURRENT_DATE,
-        created_at timestamp DEFAULT now(),
-        CONSTRAINT check_payment_source CHECK (
-            (invoice_id IS NOT NULL AND bill_id IS NULL) OR 
-            (invoice_id IS NULL AND bill_id IS NOT NULL)
-        )
-    );
+   CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    client_invoice_id INTEGER REFERENCES client_invoices(id),
+    vendor_bill_id INTEGER REFERENCES vendors_bills(id),
+    
+    amount NUMERIC(12, 2) NOT NULL,
+    payment_type VARCHAR(10) CHECK (payment_type IN ('income', 'expense')), 
+    
+    -- Status for Soft Deletes! 🛡️
+    -- 'completed' = money is in the bank
+    -- 'voided' = the soft-deleted state (ignored in totals)
+    status VARCHAR(20) DEFAULT 'completed', 
+    
+    payment_date DATE DEFAULT CURRENT_DATE,
+    method VARCHAR(50), 
+    reference_number TEXT, 
+    
+    CONSTRAINT one_target_only CHECK (
+        (client_invoice_id IS NOT NULL AND vendor_bill_id IS NULL) OR 
+        (client_invoice_id IS NULL AND vendor_bill_id IS NOT NULL)
+    ),
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+  
 
    CREATE TABLE payrolls (
   id SERIAL PRIMARY KEY,
@@ -143,7 +187,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 export async function down(pgm: MigrationBuilder): Promise<void> {
   pgm.sql(`
     DROP TABLE IF EXISTS 
-      payments, payrolls, vendor_bills, client_invoices, 
+      payments, payrolls, vendors_bills, client_invoices, 
       project_vendors, projects, vendors, clients, 
       services, employees 
     CASCADE;

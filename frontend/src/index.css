@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.js";
+
+body {
+  @apply bg-gs-bg text-gs-dark antialiased;
+}

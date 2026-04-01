@@ -49,5 +49,5 @@ export const useFetchEmployees = () => {
     fetchEmployees();
   }, []);
 
-  return { employees, loading, error };
+  return { employees, setEmployees, loading, error };
 };

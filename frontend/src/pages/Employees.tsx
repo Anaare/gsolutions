@@ -3,15 +3,22 @@ import EmployeeFilters from "../components/Employees/EmployeeFilters";
 import EmployeesTable from "../components/Employees/EmployeesTable";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useFetchEmployees } from "../hooks/useFetchEmployees";
+import type { Employee } from "../components/Employees/types";
+import EditEmployeeModal from "../components/Employees/EditEmployeeModal";
+import { useNavigate } from "react-router-dom";
 
 const Employees = () => {
   // 1. Filtering (search bar, filtering by status ) OK
-  // 2. Sorting (hire date, salary, alphabetically)
-  // 3. Actions (edit, delete, single employee profile)
+  // 2. Sorting (hire date, salary, alphabetically) OK
+  // 3. Actions (edit, delete, add)
   // 4. Pagination
   const [searchQuery, setSearchQuery] = useState("");
-  const { employees, loading, error } = useFetchEmployees();
-
+  const { employees, setEmployees, loading, error } = useFetchEmployees();
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null,
+  );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const navigate = useNavigate();
   if (loading)
     return (
       <div className="flex items-center justify-center h-64 text-gs-primary">
@@ -36,6 +43,59 @@ const Employees = () => {
         </p>
       </div>
     );
+  const handleEditClick = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateUI = (updatedEmployee: Employee) => {
+    if (!updatedEmployee || !updatedEmployee.id) {
+      console.error(
+        "Update UI failed: updatedEmployee is undefined or missing ID",
+        updatedEmployee,
+      );
+      return;
+    }
+
+    setEmployees((prev) =>
+      prev
+        ? prev.map((emp) =>
+            emp && emp.id === updatedEmployee.id ? updatedEmployee : emp,
+          )
+        : null,
+    );
+    setIsEditModalOpen(false);
+    setSelectedEmployee(null);
+
+    navigate("/employees", { replace: true });
+  };
+
+  const handleSave = async (formData: Partial<Employee>) => {
+    if (!selectedEmployee) return;
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(
+        `${API_URL}/api/v1/employees/${selectedEmployee.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+          credentials: "include",
+        },
+      );
+
+      if (!res.ok) throw new Error("Update failed");
+
+      const json = await res.json();
+
+      handleUpdateUI(json.data);
+    } catch (err) {
+      console.error("Update error:", err);
+    }
+  };
+  const handleRemoveFromUI = (id: number) => {
+    setEmployees((prev) => (prev ? prev.filter((e) => e.id !== id) : null));
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,7 +108,21 @@ const Employees = () => {
       </div>
 
       {/* TABLE */}
-      <EmployeesTable employees={employees} searchQuery={searchQuery} />
+      <EmployeesTable
+        searchQuery={searchQuery}
+        employees={employees || []}
+        onDelete={handleRemoveFromUI}
+        onEdit={handleEditClick}
+      />
+      {selectedEmployee && (
+        <EditEmployeeModal
+          key={selectedEmployee.id}
+          employee={selectedEmployee}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleSave}
+        />
+      )}
     </div>
   );
 };

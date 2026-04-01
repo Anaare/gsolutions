@@ -8,7 +8,7 @@ export interface Employee {
   email: string;
   personal_id: string;
   job_title: string;
-  contract_salary: string;
+  contract_salary: number;
   hire_date: string;
   status: EmployeeStatus;
   bank_account: string | null;
